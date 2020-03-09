@@ -1,0 +1,400 @@
+
+//USER CLAIM
+
+
+package com.model;
+
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+
+public class UserClaim {
+	
+	private String expenseType;
+	@NotBlank(message ="{error.employeeId}")
+	
+	private String employeeId;
+	
+	@NotNull(message ="{error.expenseAmount}")
+	@Min(value = 1,message="{error.expenseAmount.negative}")
+	
+	private double expenseAmt;
+	
+	public String getExpenseType() {
+		return expenseType;
+	}
+	public void setExpenseType(String expenseType) {
+		this.expenseType = expenseType;
+	}
+	public double getExpenseAmt() {
+		return expenseAmt;
+	}
+	public void setExpenseAmt(double expenseAmt) {
+		this.expenseAmt = expenseAmt;
+	}
+	public String getEmployeeId() {
+		return employeeId;
+	}
+	public void setEmployeeId(String employeeId) {
+		this.employeeId = employeeId;
+	}
+	
+}
+
+
+
+
+
+//TAX CONTROLLER
+
+
+
+
+package com.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.model.UserClaim;
+
+import com.service.TaxService;
+import com.service.TaxServiceImpl;
+
+
+
+@Controller
+public class TaxController {
+	
+	
+	@Autowired
+	private TaxService taxService;
+
+	@RequestMapping(value = "/getTaxClaimFormPage",method=RequestMethod.GET)
+	public String getTaxClaimFormPage(@ModelAttribute("userClaim") UserClaim userClaim) {
+		userClaim= new UserClaim();
+		return "taxclaim";
+	}
+	
+	@RequestMapping(value = "/calculateTax",method=RequestMethod.GET)
+	public String calculateTax(@Valid @ModelAttribute("userClaim")  UserClaim userClaim, BindingResult result,ModelMap model) {
+		if(result.hasErrors()) {
+			return "taxclaim";
+		}else {
+			double amount=taxService.calculateTax(userClaim);
+			model.addAttribute("taxClaimAmount", amount);
+			model.addAttribute("expenseType", userClaim.getExpenseType());
+			model.addAttribute("expenseAmount", userClaim.getExpenseAmt());
+			
+		return "result";
+		}
+	}
+	@ModelAttribute("expenseList")
+	public List<String> populateExpense(){
+		List<String> productTypeList=new ArrayList<String>();
+		productTypeList.add("MedicalExpense");
+		productTypeList.add("TravelExpense");
+		productTypeList.add("FoodExpense");
+		return productTypeList;
+	}
+}
+
+
+
+
+//TAX SERVICE
+
+
+
+package com.service;
+import org.springframework.stereotype.Service;
+
+import com.model.UserClaim;
+@Service
+public interface TaxService {
+	
+	public double calculateTax(UserClaim userClaim);
+
+}
+
+
+
+
+
+
+
+//TAX SERVICE IMPL
+
+
+
+package com.service;
+
+import org.springframework.stereotype.Service;
+
+import com.model.UserClaim;
+@Service
+public class TaxServiceImpl implements TaxService{
+
+	@Override
+	public double calculateTax(UserClaim userClaim) {
+		// TODO Auto-generated method stub
+		
+		double expenseamount=0.0;
+		double amount=userClaim.getExpenseAmt();
+		
+		if(amount<=1000) {
+		if(userClaim.getExpenseType().equals("MedicalExpense")) {
+			expenseamount=amount*(0.15);
+		
+		}
+		else if(userClaim.getExpenseType().equals("TravelExpense")) {
+			expenseamount=amount*(0.10);
+		}
+		else if(userClaim.getExpenseType().equals("FoodExpense")) {
+			expenseamount=amount*(0.5);
+		}
+	
+		
+		
+		}
+		else if(amount<=10000) {
+			if(userClaim.getExpenseType().equals("MedicalExpense")) {
+				expenseamount=amount*(0.20);
+			}
+			else if(userClaim.getExpenseType().equals("TravelExpense")) {
+				expenseamount=amount*(0.15);
+			}
+			else if(userClaim.getExpenseType().equals("FoodExpense")) {
+				expenseamount=amount*(0.10);
+			}
+		
+			
+			
+		}
+		else  {
+			if(userClaim.getExpenseType().equals("MedicalExpense")) {
+				expenseamount=amount*(0.25);
+			}
+			else if(userClaim.getExpenseType().equals("TravelExpense")) {
+				expenseamount=amount*(0.20);
+			}
+			else if(userClaim.getExpenseType().equals("FoodExpense")) {
+				expenseamount=amount*(0.15);
+			}
+		
+			
+			
+		}
+		return expenseamount;
+	}
+
+}
+
+
+
+
+
+//INTERNATIONALIZATION CONFIG
+
+
+
+
+
+package com.controller;
+
+import java.util.Locale;
+
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+
+@Configuration
+public class InternationalizationConfig extends WebMvcConfigurerAdapter {
+
+//Create a SessionLocaleResolver object and set the default locale to English  return the SessionLocaleResolver object  
+	@Bean
+   public LocaleResolver localeResolver() {
+		SessionLocaleResolver  sessionLocaleResolver = new SessionLocaleResolver ();
+		sessionLocaleResolver.setDefaultLocale(new Locale("en"));
+		   return sessionLocaleResolver;
+   }
+   
+   //Create LocaleChangeInterceptor object and set the parameter name as language and return the localeChangeInterceptor
+   @Bean
+   public LocaleChangeInterceptor localeChangeInterceptor() {
+	   LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+	      localeChangeInterceptor.setParamName("language");
+	      return localeChangeInterceptor;
+
+   }
+   @Bean(name = "messageSource")
+	public MessageSource messageSource() {
+	   ReloadableResourceBundleMessageSource messageSource = 
+	       new ReloadableResourceBundleMessageSource();
+	   messageSource.setBasename("classpath:messages");
+	  // messageSource.setCacheSeconds(5);
+	   return messageSource;
+	}
+
+	@Bean
+	@Primary
+	public LocalValidatorFactoryBean getValidator() {
+	    LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+	    bean.setValidationMessageSource(messageSource());
+	    return bean;
+	}
+   
+   //register the LocaleChangeInterceptor
+   @Override
+   public void addInterceptors(InterceptorRegistry registry) {
+	   LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+		localeChangeInterceptor.setParamName("language");
+		registry.addInterceptor(localeChangeInterceptor);
+      
+   }
+}
+
+
+
+
+
+//RESULT.JSP
+
+
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+
+
+<h2>The tax claim for ${expenseType} with expense amount ${expenseAmount} is ${taxClaimAmount}.</h2>
+
+</body>
+</html>
+
+
+
+
+
+//TAX CLAIM.JSP
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1" isELIgnored="false"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<body style="background-color:lavender">
+<h1><center> Tax: Tax Claim </center></h1>
+
+<a href="/getTaxClaimFormPage?language=en">English</a>|<a href="/getTaxClaimFormPage?language=de">German</a>|<a href="/getTaxClaimFormPage?language=fr">French</a></align>
+
+<form:form  action="calculateTax" modelAttribute="userClaim" method="get">
+	               
+
+<table>
+              
+<tr><td id="id1"><spring:message code="label.employeeId"></spring:message></td>
+<td id="id2"> <form:input path="employeeId" id="employeeId" name="employeeId"/></td>
+<td id="id3"><form:errors path="employeeId"></form:errors></td></tr>
+				
+
+ <tr><td id="id4"><spring:message code="label.expenseType"></spring:message></td>
+ <td id="id5"><form:select path="expenseType" items="${expenseList}" id="expenseType" name="expenseType">
+ </form:select></td>
+ <td id="id6"><form:errors path="expenseType"></form:errors></td></tr>
+
+
+<tr><td id="id7"><spring:message code="label.expenseAmount"></spring:message></td>
+<td id="id8"><form:input path="expenseAmt" id="expenseAmt" name="expenseAmount"/> </td>
+<td id=id9><form:errors path="expenseAmt"></form:errors></td></tr>
+
+
+<tr><td><input type="Submit" name="submit" value="Calculate Claim"/></td><td></td></tr>
+<tr><td><input type="reset" name="reset" value="Clear"/></td><td></td></tr>				
+</table>
+</form:form>
+</body>
+</html>
+
+
+
+
+
+//APPLICATION PROPERTIES
+
+
+
+#Do not edit the key server.port.Port number can be changed
+#include other needed configurations
+server.port=9095
+spring.mvc.view.prefix=/WEB-INF/jsp/
+spring.mvc.view.suffix=.jsp
+
+spring.messages.basename=messages
+spring.messages.encoding=UTF-8
+
+
+
+
+
+//TMS APPLICATION
+
+
+package com;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+
+@SpringBootApplication
+@ComponentScan("com.*")
+public class TmsApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(TmsApplication.class, args);
+	}
+
+}
+
+
+

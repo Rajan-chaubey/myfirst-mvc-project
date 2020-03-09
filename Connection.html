@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html >
+    <head><title>ACTB Connection portal</title>
+    <style>
+        body
+        {
+            background-color: #EED426;
+            text-align: center;
+        }
+        h1
+        {    
+            text-align: center;
+            color: #006666;
+            font-family: Verdana;
+        }
+        form
+        {
+            text-align: center;
+        }
+        table
+        {
+            border: 1px solid ;
+            float: right;
+            padding: 1px;
+            
+        }
+        th,td
+        {
+            border: 1px solid ;
+            padding: 1px;
+        }
+        div
+        {
+            float: right;
+        }
+        
+    </style>
+    
+    </head>
+    <body> 
+        <h1>ACTB Connection Portal</h1>
+        <br>
+        
+         Customer Name<input id="custname" name="custname" type="text"  placeholder="Enter the customer name" required>
+         <br>
+         <br>
+         Customer Email <input id="email" name="email" type="email"  placeholder="abc@gmail.com" required>
+         <br>
+         <br>
+         Mobile Number <input name="mobile" type="text" pattern="[7-9]\d{9}" placeholder="Enter the Mobile Number" required >
+         <br>
+         <br>
+         Connection Type <select id="connectiontype" name="conntype">
+            <option  value="Pre" name="Pre">Pre</option>
+            <option  value="Post" name="Post">Post</option>
+            </select>
+            <br>
+            <br>
+         Scheme Name
+            <input type="radio" id="scheme1" value="Local" name="scheme">Local
+            <input type="radio" id="scheme2" value="STD" name="scheme">STD
+            <input type="radio" id="scheme3" value="FullTalkTime" name="scheme">FullTalkTime
+            <br>
+            <br>
+            Connection Duration<input id="duration" name="duration" type="number" min="1" max="12">
+            <br>
+            <br>
+            <button id="b1" name="submit" onclick="display()">Connection Bill Amount</button>
+            <button id="b2" name="clear">Reset</button>
+            <br>
+          <p id="result"></p>
+           <div>
+               <h4>Rental Cost Table</h4>
+            <table id="rentalcost" >
+                    <tr>
+                        <th> <strong>Connection Type</strong></th>
+                        <th><strong>Call Limit</strong></th>
+                        <th><strong>Monthly Rental</strong></th>
+                    </tr>
+
+                <tr>
+                    <td>Pre </td>
+                    <td>500</td>
+                    <td>75</td>
+                </tr>
+                <tr>
+                    <td>Post</td>
+                    <td>Unlimited</td>
+                    <td>150</td>
+                </tr>
+            </table>
+            </div>
+            
+             
+
+         
+        <script type="text/javascript">
+          function display()
+          {
+              var mr=0;
+              var Connection=document.getElementById("connectiontype").value;
+              
+              if(Connection=="Pre")
+              {
+                  mr=75;
+                  
+              }
+              if(Connection=="Post")
+              {
+                  mr=150;
+                  
+              }
+              
+               var cpm=0;
+              if(document.getElementById('scheme1').checked)
+              {
+                  
+                  cpm=200;
+                 
+                  
+              }
+              if(document.getElementById('scheme2').checked)
+              {
+                  cpm=350;
+              }
+
+              if(document.getElementById('scheme3').checked) 
+              {
+                  
+                  cpm=500;
+                  
+              }
+              
+             var dur= document.getElementById("duration").value;
+             
+             
+              var tmrc=((dur*cpm)+mr);
+              
+              
+              
+              document.getElementById("result").innerHTML="The Total Monthly Rental Cost is Rs. "+ tmrc;
+               
+              
+          }
+     
+          </script>
+          </body>
+</html>
