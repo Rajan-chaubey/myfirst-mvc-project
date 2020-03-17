@@ -1,0 +1,3 @@
+Component,service,Repository,Controller
+Autowired
+ComponentScan
